@@ -2,7 +2,7 @@ local MyAddon = LibStub("AceAddon-3.0"):NewAddon("LateComer", "AceConsole-3.0")
 local MyConsole = LibStub("AceConsole-3.0")
 local icon = LibStub("LibDBIcon-1.0")
 
-local db = {players = {}, region = {}, lookup = {}, lookupConfig = {}}
+local db = {players = {}, realm = {}, lookup = {}, lookupConfig = {}}
 local cache = {data = {}, length = 0}
 local player = {}
 local level120 = 120
@@ -17,6 +17,8 @@ _G.LateComer.player.guid = UnitGUID("player")
 _G.LateComer.player.name = UnitFullName('player')
 _G.LateComer.player.realmid = GetRealmID()
 _G.LateComer.player.realmName = GetRealmName()
+_G.LateComer.player.class = UnitClass("player")
+_G.LateComer.player.race = UnitRace("player")
 _G.LateComer.player.factionGroup, _G.LateComer.player.factionGroupName = UnitFactionGroup("player")
 _G.LateComer.player.level = UnitLevel("player")
 -- MyAddon:Print(test, UnitFullName('player'), GetRealmID(), GetRealmName(), UnitFactionGroup("player"))
@@ -24,7 +26,7 @@ _G.LateComer.player.level = UnitLevel("player")
 function db:addPlayers(data)
 	if _G.LateComer.player.factionGroup == data.type then
 		db.players = data.data
-		db.region = data.region
+		db.realm = data.realm
 	end
 end
 
@@ -35,76 +37,86 @@ function db:addLookup(data)
 end
 
 -- return  nil or {}
-function db:getMythticsByName(region, name)
+function db:getMythticsByName(realm, name)
+	if realm == nil or name == nil then
+		return
+	end
 	--getFromCache
 	local playersData =  nil 
 
-	playersData = _G.LateComer.cache:getByName(region.."-"..name)
+	playersData = _G.LateComer.cache:getByName(realm.."-"..name)
+
 	if playersData ~= nil then
 		return playersData
 	end
 
 	--getNums by negion and name
-	local regionNums = self:getRegionNums(region)
-	if regionNums == nil then
+	local realmNums = self:getRegionNums(realm)
+
+	if realmNums == nil then
 		return nil
 	end
 
-	local regionIndex = self:getIndexByNanme(region, name)
-	if regionIndex == nil then
+	local realmIndex = self:getIndexByNanme(realm, name)
+	if realmIndex == nil then
 		return nil
 	end
-	
+
 	--unpackData()
-	playersData = self:unpackData(regionNums, regionIndex)
+	playersData = self:unpackData(realmNums, realmIndex)
 	-- cache
-	_G.LateComer.cache:add(region.."-"..name, playersData)
+	_G.LateComer.cache:add(realm.."-"..name, playersData)
 	return playersData
 end
 
-function  db:unpackData(regionNums, regionIndex) 
+function  db:unpackData(realmNums, realmIndex) 
 	-- get chunk
 	local chunk = 36
-	local index = (regionNums +  regionIndex - 1) * chunk + 1
-	local bytes = {strbyte(_G.LateComer.db.lookup[1], index, index + chunk)}
+	local index = (realmNums +  realmIndex - 1) * chunk + 1
 
+	local bytes = {strbyte(_G.LateComer.db.lookup[1], index, index + chunk -1)}
+	local testBytes = {strbyte(_G.LateComer.db.lookup[1], 1, 32)}
 	-- parse chunk
 	local data = {season = {}, weekly = {}}
-	local mythics = ""
+	
 	local i = 1
 	local key = 1
 
 	while (i <= 36) do
 
+		local mythics = ""
 		if bytes[i] ~= 0 and bytes[i+1] ~= 0  then 	
 			mythics = {}
 			mythics.plus = bit.rshift(bytes[i], 6) 
-			mythics.level = bit.band(bytes[i], 63) 
+			mythics.level = bit.band(bytes[i], 63)
+			if(i < 24)  then
+				mythics.affixs = bytes[i+1] 
+			end
 		end
 
 		if i <= 24 then 
-			mythics.affixs = bytes[i+1] 
 			data.season[key] = mythics
 			i = i + 2
 		else
 			data.weekly[key-12] = mythics
 			i = i + 1
 		end
+		
 		key = key + 1
 	end
 
 	return data	
 end
 
-function db:getRegionNums(region)
+function db:getRegionNums(realm)
 
-	if _G.LateComer.db.region == nil then
+	if _G.LateComer.db.realm == nil then
 		return nil
 	end
 	local counter = 0
-	for i,v in pairs(_G.LateComer.db.region) do
+	for i,v in pairs(_G.LateComer.db.realm) do
 
-		if i == region then
+		if i == realm then
 			return counter
 		end
 		counter = counter + v
@@ -113,15 +125,14 @@ function db:getRegionNums(region)
 	return nil
 end
 
-function db:getIndexByNanme(region, name)
-	local min = 0
-	local max = self.region[region]
-	local players= self.players[region]
+function db:getIndexByNanme(realm, name)
+	local min = 1
+	local max = self.realm[realm]
+	local players= self.players[realm]
 
 	while min <= max do
 		local mid = floor((max + min) / 2)
-		local current = players[mid] 
-			
+		local current = players[mid]
 		if current == name then
 			return mid
 		elseif current < name then
@@ -160,9 +171,11 @@ function player:selfData()
 	local data = {}
 	-- playerMythics
 	data['name'] 	= _G.LateComer.player.name
-	data['region'] 	= _G.LateComer.player.realmName
+	data['realm'] 	= _G.LateComer.player.realmName
 	data['guid'] 	= _G.LateComer.player.guid
 	data['type'] 	= _G.LateComer.player.factionGroup
+	data['race'] 	= _G.LateComer.player.race
+	data['class'] 	= _G.LateComer.player.class
 	-- season 
 	
 	local season 	= api:getPlayerSeasonMythicPlus()
@@ -195,10 +208,10 @@ local function doubleClick()
 		return 
 	end
 	LateComerUI.mainFrame:Show()
-	LateComer.player:draw()
+	LateComerUI:drawParty()
 end 
 
-local miniButton = LibStub("LibDataBroker-1.1"):NewDataObject("LC", {
+local miniMapButton = LibStub("LibDataBroker-1.1"):NewDataObject("LC", {
     type = "data source",
     text = "LateComer",
     icon = "Interface\\Icons\\70_inscription_vantus_rune_light",
@@ -208,6 +221,12 @@ local miniButton = LibStub("LibDataBroker-1.1"):NewDataObject("LC", {
 		tooltip:Show()
 	end
 })
+local db = { hide = false}
+icon:Register("LateComerMiniMapButton", miniMapButton, db)
+
+
+LateComerUI:mainFrame()
+LateComerUI:createLGFUI()
 
 function MyAddon:newEvent(frame, func, event)
 	for k,v in pairs(event) do
@@ -219,10 +238,7 @@ end
 --main loade
 local loadLisetener = CreateFrame('Frame', 'Listener')
 local function mainLoad(self, event, ...)
-	local db = { hide = false}
-	icon:Register("LateComer", miniButton, db)
-	LateComerUI.mainFrame()
-	LateComerUI:createLGFUI()
+
 end
 
 MyAddon:newEvent(loadLisetener, mainLoad, {"ADDON_LOADED"})
@@ -231,7 +247,6 @@ MyAddon:newEvent(loadLisetener, mainLoad, {"ADDON_LOADED"})
 local firstStep= CreateFrame("Frame")
 local function eventMoving(self, event, ...)
 	-- local activityInfo = C_LFGList.GetActiveEntryInfo()
-	-- MyAddon.Print(activityInfo)
 	firstStep:UnregisterEvent("PLAYER_STARTED_MOVING")
 	LateComer.player:draw()
 	if( UnitLevel("player") == level120) then
@@ -260,12 +275,11 @@ hooksecurefunc(GameTooltip,"SetText",function(self,name)
 	
 	-- GroupFinder > ApplicantViewer > Tooltip
 	if owner_name then
-		if owner_name:find("^LFGListApplicationViewerScrollFrameButton") then	
+		if owner_name:find("^LFGListApplicationViewerScrollFrameButton") then
 			playerName, playerRealm = strsplit("-", name)
 			LateComerUI:refreshLGFUI(playerRealm, playerName)
 		end
 	end
-
 end)
 
 hooksecurefunc(GameTooltip,"AddLine",function(self,text) -- GameTooltip_AddColoredLine
@@ -278,14 +292,24 @@ hooksecurefunc(GameTooltip,"AddLine",function(self,text) -- GameTooltip_AddColor
 			owner_name = owner:GetDebugName()
 		end
 	end
-
+	local hide = true
 	if owner_name then
 		if owner_name:find("^LFGListSearchPanelScrollFrameButton") then -- GroupFinder > SearchResult > Tooltip
 			local leaderName = text:match(_LFG_LIST_TOOLTIP_LEADER)
 			if leaderName then
 
 				playerName, playerRealm = strsplit("-", leaderName)
+				if playerName and playerRealm then
+					LateComerUI:refreshLGFUI(playerRealm, playerName)
+					hide = false
+				end
+			end
+		elseif owner_name:find("^QuickJoinScrollFrameButton") and owner.entry and owner.entry.guid then
+			local leader = text:match(LFG_LIST_TOOLTIP_LEADER:gsub("%%s","(.*)"));
+			if leader then
+				playerName, playerRealm = strsplit("-", leader)
 				LateComerUI:refreshLGFUI(playerRealm, playerName)
+				hide = false
 			end
 		end
 	end

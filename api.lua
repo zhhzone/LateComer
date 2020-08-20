@@ -135,7 +135,7 @@ function api:dungeonListShort()
     return {
         "阿塔",
         "自由",
-        "托儿所",
+        "监狱",
         "暴富",
         "庄园",
         "诸王",
@@ -296,17 +296,21 @@ function api:weeklyData(data)
 end
 
 local levelColor = {
-    ["2"] =   "|cffEEE8CD",
-    ["10"] =  "|cffCDCDC1",
-    ["15"] =  "|cffEECFA1",
-    ["18"] =  "|cffFFC125",
-    ["21"] =  "|cffFFA500",
-    ["24"] =  "|cffFF69B4",
-    ["25"] =  "|cffFF1493",
-    ["26"] =  "|cffFF00FF",
-    ["35"] =  "|cff87CEEB"
+    [5] =   "|cff32CD32",
+    [10] =  "|cff228B22",
+    [13] =  "|cff1E90FF",
+    [15] =  "|cff0000CD",
+    [17] =  "|cffCD661D",
+    [20] =  "|cffFFA500",
+    [22] =  "|cffCD950C",
+    [23] =  "|cffFFD700",
+    [24] =  "|cffFFFF00",
+    [25] =  "|cffFF1493",
+    [26] =  "|cff9A32CD",
+    [35] =  "|cffFF00FF",
 }
 
+local levelNum = {5, 10, 13, 15, 17, 20, 22, 23, 24 ,25, 26, 35}
 local plusColor = {
    
     [1] = "|cff7CFC00",
@@ -316,25 +320,24 @@ local plusColor = {
 
 function api:getLevelColor(num)
     local color = "|cffEEEEE0"
-    for k, v in pairs(levelColor) do
-        if num < tonumber(k) then 
+    for k, v in ipairs(levelNum) do
+        if num == v then 
+            return levelColor[v]
+        elseif num < v then
             return color
-        else
-            return v
         end
-        color = v
+        color = levelColor[v]
     end
 end
 
 function api:getPlusColor(num)
-   local color = "|cff696969"
+    local color = "|cff696969"
     for k, v in pairs(plusColor) do
-        if num < k then 
-            return color
+        if num == k then 
+            return v
         end
-        color = v
     end
-
+    return color
 end
 
 

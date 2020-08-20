@@ -1,7 +1,7 @@
 ## Interface: 80300
 ## Title: LateComer
 ## Title-zhCN: 迟到
-## Notes-zhCN: 迟到或者在迟到的路上
+## Notes-zhCN: 虽然迟到,但永不缺席
 ## Version: 80300.01
 ## LoadManagers: AddonLoader
 ## SavedVariablesPerCharacter: LateComerSaveData
@@ -11,8 +11,3 @@ load.xml
 api.lua
 ui.lua
 cores.lua
-
-db_horde_lookup.lua
-db_horde_players.lua
-test_function.lua
-test.lua

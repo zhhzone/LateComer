@@ -15,12 +15,22 @@ local f25 = 25
 local f20 = 20
 local f18 = 18
 local f17 = 17
+local f16 = 16
 local f15 = 15
 local f14 = 14
+local f13 = 13
+local f12 = 12
+local f11 = 11
+local f10 = 10
+local f9 = 9
+
+local UI_head = 30
+local UI_name = 23
+local UI_title = 20
 local MES_overlimit = "|cff696969无限时"
 local MES_week 		= "|cff66CD00本周"
 local MES_season 	= "|cffFFB90F赛季"
-
+local MES_dev 		= "|cff00BFFF开发者"
 
 function LateComerUI.mainFrame()
 
@@ -31,7 +41,7 @@ function LateComerUI.mainFrame()
 	mainFrame:EnableMouse(true)
 
 	mainFrame:SetFrameLevel(5)
-    mainFrame:SetSize(1410, 760)
+    mainFrame:SetSize(1410, 560)
     mainFrame:SetFrameStrata("BACKGROUND")
     mainFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 	mainFrame:SetBackdrop(dropStyle);
@@ -39,11 +49,11 @@ function LateComerUI.mainFrame()
 
     -- Title
     local title = CreateFrame("Frame", "L_Title", mainFrame)
-    title:SetPoint("TOP", mainFrame, "TOP", 0, 50)
-    title:SetSize(180, 50)
+    title:SetPoint("TOP", mainFrame, "TOP", 0, 40)
+    title:SetSize(100, 40)
     title:SetBackdrop(dropStyle)
 	LateComerUI:setFrameBackStyle(title)
-    title.text = LateComerUI:setFrameText("赛季 - 本周",30, title, "CENTER", "CENTER", 0, 0)
+    title.text = LateComerUI:setFrameText("赛季 - 本周",f18, title, "CENTER", "CENTER", 0, 0)
 	title.text:SetTextColor( 255, 97, 0, 1)
     mainFrame.title = title
     -- --------------------
@@ -67,7 +77,7 @@ function LateComerUI.mainFrame()
     btn.text = LateComerUI:setFrameText( "刷新",19, btn, "CENTER", "CENTER", 0, 0)
     btn.text:SetTextColor(0.8, 0.8, 0.8, 1)
     -- btnClose:EnableMouse(true)
-    btn:SetScript("OnMouseUp", function() LateComerUI:createPartyInfo() end)
+    btn:SetScript("OnMouseUp", function() LateComerUI:drawParty() end)
     mainFrame.btnRefresh = btn
 
 	LateComerUI.infoList = {}
@@ -80,38 +90,39 @@ end
 
 function LateComerUI:createPersonFrame(frame, x, y)
 	local mainFrame = CreateFrame("Frame", "L_Info", frame)
-    mainFrame:SetSize(270, 690)
+    mainFrame:SetSize(270, 490)
   	mainFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", x, y)
   	mainFrame:SetBackdrop(dropStyle)
 	LateComerUI:setFrameBackStyle(mainFrame)
 -- 	name
-	mainFrame.realmName = LateComerUI:createFrameText(f25, mainFrame, "TOP", "TOP", 0, -20)
+	mainFrame.realmName = LateComerUI:createFrameText(f18, mainFrame, "TOP", "TOP", 0, -10)
+	mainFrame.sign = LateComerUI:createFrameText(f18, mainFrame, "TOP", "TOP", -100, -10)
 
 -- 	--season
-	LateComerUI:setFrameText(MES_season, f25, mainFrame, "TOPLEFT", "TOPLEFT", 15,  -55 )
+	LateComerUI:setFrameText(MES_season, f18, mainFrame, "TOPLEFT", "TOPLEFT", 15,  -27 )
 	local season = {}
 	local dungeonList = api:dungeonList()
 	
 	for i=1, 12, 1 do
 		local tempObj = {}
-		local ofy = 280 - 23 * i
-		LateComerUI:setFrameText(dungeonList[i],f18, mainFrame, "LEFT", "LEFT", 5, ofy )
-		tempObj.limit = LateComerUI:createFrameText(f18, mainFrame, "LEFT", "LEFT", 110, ofy )
-		tempObj.affixs =  LateComerUI:createAffixFrame(mainFrame, 145, ofy, 23, 23) 
-		tempObj.overLimit = LateComerUI:createFrameText(f18, mainFrame, "RIGHT", "RIGHT", 0, ofy )
+		local ofy = 200 - f16 * i
+		LateComerUI:setFrameText(dungeonList[i],f14, mainFrame, "LEFT", "LEFT", 5, ofy )
+		tempObj.limit = LateComerUI:createFrameText(f14, mainFrame, "LEFT", "LEFT", 110, ofy )
+		tempObj.affixs =  LateComerUI:createAffixFrame(mainFrame, 145, ofy, 18, 18) 
+		tempObj.overLimit = LateComerUI:createFrameText(f14, mainFrame, "RIGHT", "RIGHT", 0, ofy )
 		season[i] = tempObj		
 	end
 	mainFrame.season = season
 
 	--weekly
-	LateComerUI:setFrameText(MES_week, f25, mainFrame, "LEFT", "LEFT", 15,  -20)
+	LateComerUI:setFrameText(MES_week, f18, mainFrame, "LEFT", "LEFT", 15,  -20)
 	local weekly = {}
 	for i=1, 12, 1 do
 		local tempObj = {}
-		local ofy =  -30 - 23 * i
-		LateComerUI:setFrameText(dungeonList[i],f18, mainFrame, "LEFT", "LEFT", 5, ofy )
-		tempObj.limit = LateComerUI:createFrameText(f18, mainFrame, "LEFT", "LEFT", 110,  ofy )
-		tempObj.overLimit = LateComerUI:createFrameText(f18, mainFrame, "RIGHT", "RIGHT", 0,  ofy )
+		local ofy =  -30 - f16 * i
+		LateComerUI:setFrameText(dungeonList[i],f14, mainFrame, "LEFT", "LEFT", 5, ofy )
+		tempObj.limit = LateComerUI:createFrameText(f14, mainFrame, "LEFT", "LEFT", 110,  ofy )
+		tempObj.overLimit = LateComerUI:createFrameText(f14, mainFrame, "RIGHT", "RIGHT", 0,  ofy )
 		weekly[i] = tempObj		
 	end
 	mainFrame.weekly = weekly
@@ -135,7 +146,6 @@ function LateComerUI:drawParty()
 				if (realm == "") then
 					break
 				else
-					console.Print(name, realm)
 					local data = LateComer.db:getMythticsByName(realm, name)
 					if( data ~= nil) then
 						LateComerUI:drawPerson(realm, name, data, LateComerUI.infoList["info"..k])
@@ -152,6 +162,10 @@ end
 function LateComerUI:drawPerson(realm, name, data, frame)
 	--name
     frame.realmName:SetText(name..'    '..realm )
+
+    if LateComerUI:checkDev(name..realm) then
+    	frame.sign:SetText(MES_dev)
+    end
 	-- season
 	for k,v in ipairs(data.season) do
 		if v == "" then 
@@ -162,6 +176,7 @@ function LateComerUI:drawPerson(realm, name, data, frame)
 		else
 			--limit
 			local levelColor = api:getLevelColor(v.level)
+
 			local plusColor = api:getPlusColor(v.plus)
 			local str = levelColor..v.level .." |r"..plusColor.." +".. v.plus
 			frame.season[k].limit:SetText(str)
@@ -172,7 +187,7 @@ function LateComerUI:drawPerson(realm, name, data, frame)
 				frame.season[k].affixs[i]:SetUp(affixs[i])
 			end
 
-			if v.level > 10 then
+			if v.level >= 10 then
 				frame.season[k].affixs[4]:SetUp(api.affixSeaon)
 			else
 				frame.season[k].affixs[4]:Hide()
@@ -201,50 +216,51 @@ function LateComerUI:createLGFUI()
     LateComerUI.lgfFrame = mainFrame
 
 	mainFrame:SetFrameLevel(10)
-	mainFrame:SetSize(280, 600)
+	mainFrame:SetSize(280, 400)
     mainFrame:SetFrameStrata("BACKGROUND")
-    mainFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    mainFrame:SetPoint("right", "PVEFrame", "right", 290, 0)
 	mainFrame:SetBackdrop(dropStyle);
 	LateComerUI:setFrameBackStyle(mainFrame)
 
 	-- Close Btn
     local btn = CreateFrame("Frame", "LGF_btnClose", mainFrame)
-    btn:SetSize(120, 35)
+    btn:SetSize(80, 18)
     btn:SetPoint("BOTTOM", mainFrame, "BOTTOM", 0, 10)
     btn:SetBackdrop(dropStyle)
 	LateComerUI:setFrameBackStyle(btn)
-    btn.text = LateComerUI:setFrameText( "关闭",19, btn, "CENTER", "CENTER", 0, 0)
+    btn.text = LateComerUI:setFrameText( "关闭",f11, btn, "CENTER", "CENTER", 0, 0)
     btn.text:SetTextColor(0.8, 0.8, 0.8, 1)
     -- btnClose:EnableMouse(true)
     btn:SetScript("OnMouseUp", function(self) self:GetParent():Hide() end)
     mainFrame.btnClose = btn
 
-	mainFrame.realmName = LateComerUI:createFrameText(f20, mainFrame, "CENTER", "TOP", 0, -30)
+	mainFrame.realmName = LateComerUI:createFrameText(f14, mainFrame, "CENTER", "TOP", 0, -20)
+	mainFrame.sign = LateComerUI:createFrameText(f14, mainFrame, "CENTER", "TOP", -80, -20)
 
-	LateComerUI:setFrameText(MES_season, f18, mainFrame, "TOPLEFT", "TOPLEFT", 15,  -55)
+	LateComerUI:setFrameText(MES_season, f12, mainFrame, "TOPLEFT", "TOPLEFT", 15,  -30)
 	local season = {}
 	local dungeonList = api:dungeonListShort()
 	
 	for i=1, 12, 1 do
 		local tempObj = {}
-		local ofy = 230 - 18* i
-		LateComerUI:setFrameText(dungeonList[i],f15, mainFrame, "LEFT", "LEFT", 15, ofy )
-		tempObj.limit = LateComerUI:createFrameText(f15, mainFrame, "LEFT", "LEFT", 110, ofy )
-		tempObj.affixs =  LateComerUI:createAffixFrame(mainFrame, 145, ofy, 18, 18) 
-		tempObj.overLimit = LateComerUI:createFrameText(f15, mainFrame, "RIGHT", "RIGHT", 0, ofy )
+		local ofy = 160 - f12 * i
+		LateComerUI:setFrameText(dungeonList[i],f13, mainFrame, "LEFT", "LEFT", 15, ofy )
+		tempObj.limit = LateComerUI:createFrameText(f13, mainFrame, "LEFT", "LEFT", 110, ofy )
+		tempObj.affixs =  LateComerUI:createAffixFrame(mainFrame, 145, ofy, 13, 13) 
+		tempObj.overLimit = LateComerUI:createFrameText(f13, mainFrame, "RIGHT", "RIGHT", 0, ofy )
 		season[i] = tempObj		
 	end
 	mainFrame.season = season
 
 
-	LateComerUI:setFrameText(MES_week, f18, mainFrame, "LEFT", "LEFT", 15,  -20)
+	LateComerUI:setFrameText(MES_week, f12, mainFrame, "LEFT", "LEFT", 15,  -10)
 	local weekly = {}
 	for i=1, 12, 1 do
 		local tempObj = {}
-		local ofy =  -25 - 18* i
-		LateComerUI:setFrameText(dungeonList[i],f15, mainFrame, "LEFT", "LEFT", 15, ofy )
-		tempObj.limit = LateComerUI:createFrameText(f15, mainFrame, "LEFT", "LEFT", 110,  ofy )
-		tempObj.overLimit = LateComerUI:createFrameText(f15, mainFrame, "RIGHT", "RIGHT", 0,  ofy )
+		local ofy =  -10 - f12* i
+		LateComerUI:setFrameText(dungeonList[i],f13, mainFrame, "LEFT", "LEFT", 15, ofy )
+		tempObj.limit = LateComerUI:createFrameText(f13, mainFrame, "LEFT", "LEFT", 110,  ofy )
+		tempObj.overLimit = LateComerUI:createFrameText(f13, mainFrame, "RIGHT", "RIGHT", 0,  ofy )
 		weekly[i] = tempObj		
 	end
 	mainFrame.weekly = weekly
@@ -265,7 +281,11 @@ function LateComerUI:refreshLGFUI(realm, name)
 		lgfFrame:Hide()
 	else
 		--name
-	    lgfFrame.realmName:SetText(name..'    '..realm )
+	    lgfFrame.realmName:SetText(name..'  '..realm )
+
+	    if LateComerUI:checkDev(name..realm) then
+	    	lgfFrame.sign:SetText(MES_dev)
+	    end
 
 		-- season
 		for k,v in ipairs(data.season) do
@@ -276,7 +296,9 @@ function LateComerUI:refreshLGFUI(realm, name)
 				end
 			else
 				--limit
+
 				local levelColor = api:getLevelColor(v.level)
+
 				local plusColor = api:getPlusColor(v.plus)
 				local str = levelColor..v.level .." |r"..plusColor.." +".. v.plus
 				lgfFrame.season[k].limit:SetText(str)
@@ -287,7 +309,7 @@ function LateComerUI:refreshLGFUI(realm, name)
 					lgfFrame.season[k].affixs[i]:SetUp(affixs[i])
 				end
 
-				if v.level > 10 then
+				if v.level >= 10 then
 					lgfFrame.season[k].affixs[4]:SetUp(api.affixSeaon)
 				else
 					lgfFrame.season[k].affixs[4]:Hide()
@@ -312,6 +334,15 @@ function LateComerUI:refreshLGFUI(realm, name)
 	end
 end
 
+function LateComerUI:checkDev(str)
+	if str == '迟到布兰卡德' or str == "一休宗純海克泰尔" then 
+		return true
+	end
+end
+function LateComerUI:hideLGUFUI() 
+	LateComerUI.lgfFrame:Hide()
+end
+
 -- affix
 function LateComerUI:createAffixFrame(frame, ofx, ofy, width, hight) 
 	local affixObj = {}
@@ -328,7 +359,7 @@ function LateComerUI:createAffixFrame(frame, ofx, ofy, width, hight)
 		portrait:SetPoint("CENTER", border)
 		affix.Portrait = portrait
 		affix.SetUp = ScenarioChallengeModeAffixMixin.SetUp
-		affix:SetPoint("LEFT",frame,"LEFT", ofx + 23 * i, ofy)
+		affix:SetPoint("LEFT",frame,"LEFT", ofx + width * i, ofy)
 		-- affix:Hide()
 		affixObj[i] = affix
 	end
@@ -346,6 +377,12 @@ function LateComerUI:setFrameText(text, size, frame, point, relativePoint, ofsx,
 end
 
 function LateComerUI:createFrameText(size, frame, point, relativePoint, ofsx, ofsy)
+	local fText = frame:CreateFontString(nil, "OVERLAY")
+	fText:SetFont("Interface\\Addons\\LateComer\\resource\\font.TTF", size, "THINOUTLINE") 
+    fText:SetPoint(point, frame, relativePoint, ofsx, ofsy)
+    return fText
+end
+function LateComerUI:createFrameTextSign(size, frame, point, relativePoint, ofsx, ofsy)
 	local fText = frame:CreateFontString(nil, "OVERLAY")
 	fText:SetFont("Interface\\Addons\\LateComer\\resource\\font.TTF", size, "THINOUTLINE") 
     fText:SetPoint(point, frame, relativePoint, ofsx, ofsy)
