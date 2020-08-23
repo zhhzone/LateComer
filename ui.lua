@@ -3,7 +3,7 @@ local console = LibStub("AceConsole-3.0")
 
 LateComerUI = {}
 local dropStyle = { 
-	  bgFile = "Interface\\AddOns\\Minesweeperr\\media\\normTex", 
+	  bgFile = "bgFile", 
 	  edgeFile = "edgeFile",
 	  tile = false, 
 	  tileEdge = true, 
